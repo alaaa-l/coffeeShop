@@ -15,12 +15,16 @@ class _CartCardState extends State<CartCard> {
   @override
   Widget build(BuildContext context) {
     return Dismissible(
-      key: ValueKey(context),
-      onDismissed: (direction) => widget.cartItems.remove(widget.cartItem),
+      key: ValueKey(
+        widget.cartItem.drink.name + widget.cartItem.drink.size.toString(),
+      ),
+      onDismissed: (direction) {
+        widget.cartItems.remove(widget.cartItem);
+      },
       child: Card(
         color: const Color.fromARGB(255, 255, 255, 255),
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
           child: Row(
             children: [
               ClipRRect(
@@ -33,28 +37,30 @@ class _CartCardState extends State<CartCard> {
                 ),
               ),
               SizedBox(width: 15),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.cartItem.drink.name,
-                    style: GoogleFonts.lato(
-                      color: Colors.black,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.cartItem.drink.name,
+                      style: GoogleFonts.lato(
+                        color: Colors.black,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 5),
-                  Text(
-                    '\$ ${widget.cartItem.Totalcost}',
-                    style: GoogleFonts.lato(
-                      color: Colors.black,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
+                    SizedBox(height: 5),
+                    Text(
+                      '\$ ${(widget.cartItem.totalcost * widget.cartItem.numberOfItems).toStringAsFixed(1)}',
+                      style: GoogleFonts.lato(
+                        color: Colors.black,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
               SizedBox(width: 5),
               IconButton(
@@ -67,11 +73,11 @@ class _CartCardState extends State<CartCard> {
                     }
                   });
                 },
-                icon: Icon(Icons.remove),
+                icon: Icon(Icons.remove, size: 20),
               ),
               Container(
-                width: 20,
-                height: 20,
+                width: 30,
+                height: 25,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
                   color: Color.fromARGB(255, 132, 96, 70),
@@ -93,7 +99,7 @@ class _CartCardState extends State<CartCard> {
                     widget.cartItem.numberOfItems++;
                   });
                 },
-                icon: Icon(Icons.add),
+                icon: Icon(Icons.add, size: 20),
               ),
             ],
           ),

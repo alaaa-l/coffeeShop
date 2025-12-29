@@ -1,6 +1,5 @@
 import 'package:coffee_shop_app/models/cart_item.dart';
 import 'package:coffee_shop_app/models/drink.dart';
-import 'package:coffee_shop_app/screens/tabs.dart';
 
 import 'package:coffee_shop_app/widgets/size_button.dart';
 import 'package:flutter/material.dart';
@@ -26,18 +25,12 @@ class _DrinkDetailsState extends State<DrinkDetails> {
   String selectedSize = "Small";
   double? oprice;
   double? cost;
-  CartItem? cartItem;
 
   @override
   initState() {
     super.initState();
     oprice = widget.drink.price;
     cost = oprice;
-    CartItem(
-      drink: widget.drink,
-      numberOfItems: 1,
-      Totalcost: widget.drink.price,
-    );
   }
 
   @override
@@ -84,16 +77,6 @@ class _DrinkDetailsState extends State<DrinkDetails> {
                   GestureDetector(
                     onTap: () {
                       Navigator.of(context).pop();
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) {
-                            return Tabs(
-                              cartItems: widget.cart,
-                              favoritesList: widget.favoriteDrinks,
-                            );
-                          },
-                        ),
-                      );
                     },
                     child: Padding(
                       padding: const EdgeInsets.only(left: 20.0, top: 20.0),
@@ -276,7 +259,14 @@ class _DrinkDetailsState extends State<DrinkDetails> {
             child: GestureDetector(
               onTap: () {
                 setState(() {
-                  widget.cart.add(cartItem!);
+                  widget.cart.add(
+                    CartItem(
+                      drink: widget.drink,
+                      numberOfItems: 1,
+                      totalcost: cost!,
+                      selectedSize: selectedSize,
+                    ),
+                  );
                 });
               },
               child: Container(

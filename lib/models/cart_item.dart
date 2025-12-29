@@ -4,9 +4,11 @@ class CartItem {
   CartItem({
     required this.drink,
     required this.numberOfItems,
-    required this.Totalcost,
+    required this.totalcost,
+    required this.selectedSize,
   });
   Drink drink;
   int numberOfItems;
-  double Totalcost;
+  double totalcost;
+  String selectedSize;
 }
