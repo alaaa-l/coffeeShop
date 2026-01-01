@@ -49,15 +49,15 @@ class _DrinkDetailsState extends State<DrinkDetails> {
       'Decaf Coffee Beans': '☕',
       'Milk': '🥛',
       'Ice': '🧊',
-      'Water': '🫗',
+      'Water': '💧',
       'Chocolate Syrup': '🍫',
       'Hazelnut Syrup': '🌰',
       'Coconut Milk': '🥥',
-      'Nitrogen': '',
-      'Vanilla Syrup': '',
-      'Caramel Syrup': '',
-      'Foam': '',
-      'Almond Milk': '',
+      'Nitrogen': '🧪',
+      'Vanilla Syrup': '🌼',
+      'Caramel Syrup': '🍯',
+      'Foam': '🫧',
+      'Almond Milk': '🌰🥛',
     };
 
     return Scaffold(

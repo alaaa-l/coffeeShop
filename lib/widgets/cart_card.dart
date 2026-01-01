@@ -3,9 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class CartCard extends StatefulWidget {
-  const CartCard({required this.cartItems, required this.cartItem, super.key});
+  const CartCard({
+    required this.onIncrement,
+    required this.onDecrement,
+    required this.cartItems,
+    required this.cartItem,
+    super.key,
+  });
   final CartItem cartItem;
   final List<CartItem> cartItems;
+  final void Function() onIncrement;
+  final void Function() onDecrement;
 
   @override
   State<CartCard> createState() => _CartCardState();
@@ -64,15 +72,7 @@ class _CartCardState extends State<CartCard> {
               ),
               SizedBox(width: 5),
               IconButton(
-                onPressed: () {
-                  setState(() {
-                    if (widget.cartItem.numberOfItems > 1) {
-                      widget.cartItem.numberOfItems--;
-                    } else {
-                      widget.cartItem.numberOfItems = 1;
-                    }
-                  });
-                },
+                onPressed: widget.onDecrement,
                 icon: Icon(Icons.remove, size: 20),
               ),
               Container(
@@ -94,11 +94,7 @@ class _CartCardState extends State<CartCard> {
                 ),
               ),
               IconButton(
-                onPressed: () {
-                  setState(() {
-                    widget.cartItem.numberOfItems++;
-                  });
-                },
+                onPressed: widget.onIncrement,
                 icon: Icon(Icons.add, size: 20),
               ),
             ],
