@@ -74,16 +74,19 @@ class _DrinkDetailsState extends State<DrinkDetails> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 20.0, top: 20.0),
-                      child: Image.asset(
-                        'assets/back.png',
-                        height: 36,
-                        width: 36,
+                  Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 20.0, top: 20.0),
+                        child: Image.asset(
+                          'assets/back.png',
+                          height: 36,
+                          width: 36,
+                        ),
                       ),
                     ),
                   ),

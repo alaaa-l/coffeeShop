@@ -3,7 +3,8 @@ import 'package:coffee_shop_app/widgets/cart_card.dart';
 import 'package:coffee_shop_app/widgets/checkout_card.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:date_format/date_format.dart';
+
+import 'package:intl/intl.dart';
 
 enum Location { beirut, sidon, nabatiye, tyre, baalbek, byblos }
 
@@ -18,6 +19,7 @@ class Cart extends StatefulWidget {
 class _CartState extends State<Cart> {
   Location _selectedLocation = Location.beirut;
   DateTime? _selectedDate;
+  var formatter = DateFormat.yMd();
 
   double get subTotal {
     double subTotal = 0;
@@ -145,13 +147,7 @@ class _CartState extends State<Cart> {
                     Text(
                       _selectedDate == null
                           ? 'No date selected'
-                          : formatDate(_selectedDate!, [
-                              dd,
-                              '/',
-                              mm,
-                              '/',
-                              yyyy,
-                            ]),
+                          : formatter.format(_selectedDate!),
                       style: GoogleFonts.lato(
                         color: Color.fromARGB(255, 132, 96, 70),
                         fontWeight: FontWeight.w500,

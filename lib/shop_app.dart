@@ -1,5 +1,6 @@
 import 'package:coffee_shop_app/models/cart_item.dart';
 import 'package:coffee_shop_app/models/drink.dart';
+import 'package:coffee_shop_app/screens/start_sccreen.dart';
 import 'package:coffee_shop_app/screens/tabs.dart';
 import 'package:flutter/material.dart';
 
@@ -15,6 +16,6 @@ class _ShopAppState extends State<ShopApp> {
   List<CartItem> cart = [];
   @override
   Widget build(BuildContext context) {
-    return Tabs(favoritesList: favDrinks, cartItems: cart);
+    return StartScreen(cart: cart, favDrinks: favDrinks);
   }
 }

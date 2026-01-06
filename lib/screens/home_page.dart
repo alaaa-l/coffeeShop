@@ -6,9 +6,12 @@ import 'package:coffee_shop_app/models/offer.dart';
 import 'package:coffee_shop_app/screens/drink_details.dart';
 import 'package:coffee_shop_app/screens/special_offer.dart';
 import 'package:coffee_shop_app/widgets/category_button.dart';
+import 'package:coffee_shop_app/widgets/filters.dart';
 import 'package:coffee_shop_app/widgets/item_card.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
+enum Filter { decaf, sugarFree, lactoseFree }
 
 class HomePage extends StatefulWidget {
   const HomePage({required this.cart, required this.favList, super.key});
@@ -23,55 +26,57 @@ class _HomePageState extends State<HomePage> {
   String? searchText;
   List<Drink> drinksList = drinks;
   List<Offer> offersList = offers;
-  String selectedCategory = "cappuccino";
-  Widget? content;
+  Category selectedCategory = Category.cappuccino;
+
   List<Drink>? cappuccinoDrinks;
   List<Drink>? coldDrinks;
   List<Drink>? expressoDrinks;
 
-  @override
-  initState() {
-    super.initState();
-    cappuccinoDrinks = drinksList.where((drink) {
-      return drink.category == Category.cappuccino;
-    }).toList();
-    coldDrinks = drinksList.where((drink) {
-      return drink.category == Category.coldBrew;
-    }).toList();
-    expressoDrinks = drinksList.where((drink) {
-      return drink.category == Category.expresso;
-    }).toList();
+  Map<Filter, bool> _selectedFilters = {
+    Filter.decaf: true,
+    Filter.sugarFree: true,
+    Filter.lactoseFree: true,
+  };
 
-    content = GridView.builder(
-      padding: const EdgeInsets.only(right: 18),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        mainAxisSpacing: 18,
-        crossAxisSpacing: 18,
-        childAspectRatio: 0.86,
-      ),
-      itemCount: cappuccinoDrinks!.length,
-      itemBuilder: (context, index) {
-        return GestureDetector(
-          onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => DrinkDetails(
-                  cart: widget.cart,
-                  favoriteDrinks: widget.favList,
-                  drink: cappuccinoDrinks![index],
-                ),
-              ),
-            );
-          },
-          child: ItemCard(drink: cappuccinoDrinks![index]),
-        );
+  void _openFiltersSheet() async {
+    final result = await showModalBottomSheet<Map<Filter, bool>>(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return Filters(currentFilters: _selectedFilters);
       },
     );
+
+    setState(() {
+      _selectedFilters =
+          result ??
+          {
+            Filter.decaf: false,
+            Filter.lactoseFree: false,
+            Filter.sugarFree: false,
+          };
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final filteredDrinks = drinksList.where((drink) {
+      // category filter
+      if (drink.category != selectedCategory) return false;
+
+      // decaf filter
+      if (_selectedFilters[Filter.decaf]! && !drink.decaff) return false;
+
+      // sugar free filter
+      if (_selectedFilters[Filter.sugarFree]! && !drink.sugarFree) return false;
+
+      // lactose free filter
+      if (_selectedFilters[Filter.lactoseFree]! && !drink.lactoseFree)
+        return false;
+
+      return true;
+    }).toList();
+
     return Padding(
       padding: EdgeInsetsGeometry.symmetric(horizontal: 20, vertical: 22),
       child: Column(
@@ -101,7 +106,141 @@ class _HomePageState extends State<HomePage> {
               child: Row(
                 children: [
                   IconButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      if (searchText == null || searchText!.trim().isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              "Please enter a drink name to search",
+                            ),
+                          ),
+                        );
+                        return;
+                      }
+
+                      final matchingDrinks = drinksList
+                          .where(
+                            (drink) => drink.name.toLowerCase().contains(
+                              searchText!.toLowerCase().trim(),
+                            ),
+                          )
+                          .toList();
+
+                      if (matchingDrinks.isEmpty) {
+                        showDialog(
+                          context: context,
+                          builder: (_) => AlertDialog(
+                            title: Text(
+                              "Not Found",
+                              style: GoogleFonts.lato(
+                                color: const Color.fromARGB(255, 0, 0, 0),
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            content: Text("No drink found with '$searchText'."),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: Text(
+                                  'OK',
+                                  style: GoogleFonts.lato(
+                                    color: const Color.fromARGB(255, 0, 0, 0),
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      } else {
+                        showDialog(
+                          context: context,
+                          builder: (_) => Dialog(
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                maxWidth: 300,
+                                maxHeight: 400,
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+
+                                  children: [
+                                    Expanded(
+                                      child: SingleChildScrollView(
+                                        child: ItemCard(
+                                          drink: matchingDrinks.first,
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
+                                        children: [
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.pop(context),
+                                            child: Text(
+                                              'Cancel',
+                                              style: GoogleFonts.lato(
+                                                color: const Color.fromARGB(
+                                                  255,
+                                                  0,
+                                                  0,
+                                                  0,
+                                                ),
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            ),
+                                          ),
+                                          SizedBox(width: 8),
+                                          ElevatedButton(
+                                            onPressed: () {
+                                              Navigator.of(context).pop();
+                                              Navigator.of(context).push(
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      DrinkDetails(
+                                                        cart: widget.cart,
+                                                        favoriteDrinks:
+                                                            widget.favList,
+                                                        drink: matchingDrinks
+                                                            .first,
+                                                      ),
+                                                ),
+                                              );
+                                            },
+                                            child: Text(
+                                              'View Details',
+                                              style: GoogleFonts.lato(
+                                                color: const Color.fromARGB(
+                                                  255,
+                                                  0,
+                                                  0,
+                                                  0,
+                                                ),
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+                    },
                     icon: Icon(Icons.search, color: Colors.grey, size: 27),
                   ),
                   Expanded(
@@ -122,7 +261,7 @@ class _HomePageState extends State<HomePage> {
                   ),
 
                   IconButton(
-                    onPressed: () {},
+                    onPressed: _openFiltersSheet,
                     icon: Icon(
                       Icons.tune_rounded,
                       color: Color.fromARGB(255, 132, 96, 70),
@@ -148,36 +287,10 @@ class _HomePageState extends State<HomePage> {
               CategoryButton(
                 name: "Cappuccino",
                 imgPath: "assets/cappuccino.png",
-                isTapped: selectedCategory == "cappuccino",
+                isTapped: selectedCategory == Category.cappuccino,
                 onTap: () {
                   setState(() {
-                    selectedCategory = "cappuccino";
-                    content = GridView.builder(
-                      padding: const EdgeInsets.only(right: 18),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        mainAxisSpacing: 18,
-                        crossAxisSpacing: 18,
-                        childAspectRatio: 0.86,
-                      ),
-                      itemCount: cappuccinoDrinks!.length,
-                      itemBuilder: (context, index) {
-                        return GestureDetector(
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) => DrinkDetails(
-                                  cart: widget.cart,
-                                  favoriteDrinks: widget.favList,
-                                  drink: cappuccinoDrinks![index],
-                                ),
-                              ),
-                            );
-                          },
-                          child: ItemCard(drink: cappuccinoDrinks![index]),
-                        );
-                      },
-                    );
+                    selectedCategory = Category.cappuccino;
                   });
                 },
               ),
@@ -185,36 +298,10 @@ class _HomePageState extends State<HomePage> {
               CategoryButton(
                 name: "Cold Brew",
                 imgPath: "assets/vector.png",
-                isTapped: selectedCategory == "cold-brew",
+                isTapped: selectedCategory == Category.coldBrew,
                 onTap: () {
                   setState(() {
-                    selectedCategory = "cold-brew";
-                    content = GridView.builder(
-                      padding: const EdgeInsets.only(right: 18),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        mainAxisSpacing: 18,
-                        crossAxisSpacing: 18,
-                        childAspectRatio: 0.86,
-                      ),
-                      itemCount: coldDrinks!.length,
-                      itemBuilder: (context, index) {
-                        return GestureDetector(
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) => DrinkDetails(
-                                  cart: widget.cart,
-                                  favoriteDrinks: widget.favList,
-                                  drink: coldDrinks![index],
-                                ),
-                              ),
-                            );
-                          },
-                          child: ItemCard(drink: coldDrinks![index]),
-                        );
-                      },
-                    );
+                    selectedCategory = Category.coldBrew;
                   });
                 },
               ),
@@ -222,43 +309,44 @@ class _HomePageState extends State<HomePage> {
               CategoryButton(
                 name: "Expresso",
                 imgPath: "assets/expresso.png",
-                isTapped: selectedCategory == "expresso",
+                isTapped: selectedCategory == Category.expresso,
                 onTap: () {
                   setState(() {
-                    selectedCategory = "expresso";
-                    content = GridView.builder(
-                      padding: const EdgeInsets.only(right: 18),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        mainAxisSpacing: 18,
-                        crossAxisSpacing: 18,
-                        childAspectRatio: 0.86,
-                      ),
-                      itemCount: expressoDrinks!.length,
-                      itemBuilder: (context, index) {
-                        return GestureDetector(
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) => DrinkDetails(
-                                  cart: widget.cart,
-                                  favoriteDrinks: widget.favList,
-                                  drink: expressoDrinks![index],
-                                ),
-                              ),
-                            );
-                          },
-                          child: ItemCard(drink: expressoDrinks![index]),
-                        );
-                      },
-                    );
+                    selectedCategory = Category.expresso;
                   });
                 },
               ),
             ],
           ),
           SizedBox(height: 10),
-          Expanded(child: content!),
+          Expanded(
+            child: GridView.builder(
+              padding: const EdgeInsets.only(right: 18),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisSpacing: 18,
+                crossAxisSpacing: 18,
+                childAspectRatio: 0.86,
+              ),
+              itemCount: filteredDrinks.length,
+              itemBuilder: (context, index) {
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => DrinkDetails(
+                          cart: widget.cart,
+                          favoriteDrinks: widget.favList,
+                          drink: filteredDrinks[index],
+                        ),
+                      ),
+                    );
+                  },
+                  child: ItemCard(drink: filteredDrinks[index]),
+                );
+              },
+            ),
+          ),
           SizedBox(height: 30),
 
           GestureDetector(
